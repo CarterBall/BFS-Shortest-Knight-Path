@@ -53,7 +53,7 @@ def animate_heatmap_then_path(distance, path, n=8):
                     fontsize=10
                     )
 
-        # --- 2. After full heatmap is revealed, draw path ---
+        # draw knights path when heat map is completed
         if upto == max_depth:
             xs = [p[0] + 0.5 for p in path]
             ys = [p[1] + 0.5 for p in path]
@@ -68,7 +68,7 @@ def animate_heatmap_then_path(distance, path, n=8):
             ax.text(ex + 0.5, ey + 0.5, "♞", fontsize=20, ha='center', va='center')
 
 
-    # --- animation over BFS depth ---
+    # animation of BFS
     ani = FuncAnimation(
         fig,
         draw_board,
