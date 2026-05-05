@@ -23,8 +23,10 @@ def animate_heatmap_then_path(distance, path, n=8):
 
     heat_drawn = set()
 
+    sx, sy = path[0]
+
     knight = ax.text(
-        0.5, 0.5,
+        sx + 0.5, sy + 0.5,
         "♞",
         fontsize=22,
         ha='center',
@@ -38,8 +40,8 @@ def animate_heatmap_then_path(distance, path, n=8):
     
 
     def update(frame):
-        if frame == 0:
-            knight.set_position((0.5, 0.5))
+        #if frame == 0:
+            #knight.set_position((0.5, 0.5))
 
         if frame <= max_depth:
             upto = frame
@@ -77,12 +79,12 @@ def animate_heatmap_then_path(distance, path, n=8):
                     )
 
         # draw knights path when heat map is completed
-        if upto == max_depth:
-            xs = [p[0] + 0.5 for p in path]
-            ys = [p[1] + 0.5 for p in path]
+        #if upto == max_depth:
+            #xs = [p[0] + 0.5 for p in path]
+            #ys = [p[1] + 0.5 for p in path]
 
-        if frame > max_depth:
-
+        #if frame > max_depth:
+        else:
             idx = frame - max_depth - 1
 
             if idx < len(path):
@@ -92,8 +94,12 @@ def animate_heatmap_then_path(distance, path, n=8):
                 xs = [p[0] + 0.5 for p in path[:idx + 1]]
                 ys = [p[1] + 0.5 for p in path[:idx + 1]]
                 path_line.set_data(xs, ys)
+            return (knight, path_line)
+
+    frames = list(range(max_depth + 1 + len(path)))
 
     # animation of BFS
+    global ani
     ani = FuncAnimation(
         fig,
         update,
