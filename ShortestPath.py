@@ -12,21 +12,41 @@ def animate_heatmap_then_path(distance, path, n=8):
     for x in range(n):
         for y in range(n):
             base_color = "white" if (x + y) % 2 == 0 else "lightgray"
-            ax.add_patch(plt.Rectangle((x, y), 1, 1, color=base_color))
+            rect = plt.Rectangle((x, y), 1, 1, color=base_color)
+            rect.set_zorder(0)
+            ax.add_patch(rect)
 
     ax.set_xlim(0, n)
     ax.set_ylim(0, n)   # correct chess orientation
     ax.set_aspect('equal')
     ax.axis('off')
 
-    def draw_board(upto):
+    heat_drawn = set()
 
+    knight = ax.text(
+        0.5, 0.5,
+        "♞",
+        fontsize=22,
+        ha='center',
+        va='center'
+    )
+    knight.set_zorder(10)
+
+    path_line, = ax.plot([], [], color="blue", linewidth=2, zorder=5)
+    
+
+    
+
+    def update(frame):
+        if frame == 0:
+            knight.set_position((0.5, 0.5))
+
+        if frame <= max_depth:
+            upto = frame
         # draw heat map in animation
-        for x in range(n):
-            for y in range(n):
-                d = distance.get((x, y), None)
+            for (x, y), d in distance.items():
 
-                if d is not None and d <= upto:
+                if d <= upto and (x, y) not in heat_drawn:
 
                     if d == 0:
                         color = "darkgreen"
@@ -43,14 +63,17 @@ def animate_heatmap_then_path(distance, path, n=8):
                     else:
                         color = "red"
 
-                    ax.add_patch(plt.Rectangle((x, y), 1, 1, color=color, alpha=0.6))
-
+                    rect = plt.Rectangle((x, y), 1, 1, color=color, alpha=0.6)
+                    rect.set_zorder(1)
+                    ax.add_patch(rect)
+                    
                     ax.text(
-                    x + 0.5, y + 0.5,
-                    str(d),
-                    ha='center',
-                    va='center',
-                    fontsize=10
+                        x + 0.5, y + 0.5,
+                        str(d),
+                        ha='center',
+                        va='center',
+                        fontsize=10,
+                        zorder=2
                     )
 
         # draw knights path when heat map is completed
@@ -58,24 +81,40 @@ def animate_heatmap_then_path(distance, path, n=8):
             xs = [p[0] + 0.5 for p in path]
             ys = [p[1] + 0.5 for p in path]
 
-            ax.plot(xs, ys, color="blue", linewidth=2, marker='o')
+        if frame > max_depth:
 
-            # knight start/end
-            sx, sy = path[0]
-            ex, ey = path[-1]
+            idx = frame - max_depth - 1
 
-            ax.text(sx + 0.5, sy + 0.5, "♞", fontsize=20, ha='center', va='center')
-            ax.text(ex + 0.5, ey + 0.5, "♞", fontsize=20, ha='center', va='center')
+            if idx < len(path):
+                x, y = path[idx]
+                knight.set_position((x + 0.5, y + 0.5))
 
+                xs = [p[0] + 0.5 for p in path[:idx + 1]]
+                ys = [p[1] + 0.5 for p in path[:idx + 1]]
+                path_line.set_data(xs, ys)
 
     # animation of BFS
     ani = FuncAnimation(
         fig,
-        draw_board,
-        frames=range(max_depth + 1),
+        update,
+        frames=frames,
         interval=1200,
-        repeat=False
-    )
+        repeat=False,
+        blit=False)
+    
+    # draw knight path
+        #if upto == max_depth:
+        #    xs = [p[0] + 0.5 for p in path]
+        #    ys = [p[1] + 0.5 for p in path]
+
+        #    ax.plot(xs, ys, color="blue", linewidth=2, marker='o')
+
+            # knight start/end
+        #    sx, sy = path[0]
+        #    ex, ey = path[-1]
+
+        #    ax.text(sx + 0.5, sy + 0.5, "♞", fontsize=20, ha='center', va='center')
+        #    ax.text(ex + 0.5, ey + 0.5, "♞", fontsize=20, ha='center', va='center')
 
     plt.show()
 
@@ -198,7 +237,7 @@ def reconstruct_path(parent, start, end):
 # reconstructing the final path and reversing it in order to visualize it from start to finish not in reverse becuase popping the path from the dictionary will be end to start
 final_path = reconstruct_path(shortest_path_map, user_start, user_end)
 
-# visualize_heatmap_with_path(heat_map_distances, final_path)
+# animate_heatmap_then_path(heat_map_distances, final_path)
 animate_heatmap_then_path(heat_map_distances, final_path)
 
 
